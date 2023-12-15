@@ -1,22 +1,18 @@
 const { invoke } = window.__TAURI__.tauri;
 
-let greetInputEl;
 let greetMsgEl;
-
-async function greet() {
-  greetMsgEl.textContent = await invoke("greet", { name: greetInputEl.value });
-}
+let rssFeedEl;
 
 async function example_rss() {
-  console.log(await invoke("example_feed"));
+  await invoke("example_feed")
+    .then((message) => (rssFeedEl.textContent = message))
+    .catch((error) => console.error(error));
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  greetInputEl = document.querySelector("#greet-input");
-  greetMsgEl = document.querySelector("#greet-msg");
-  document.querySelector("#greet-form").addEventListener("submit", (e) => {
+  rssFeedEl = document.querySelector("#rss-feed");
+  document.querySelector("#rss-refresh").addEventListener("submit", (e) => {
     e.preventDefault();
-    greet();
     example_rss();
   });
 });

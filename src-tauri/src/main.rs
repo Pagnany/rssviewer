@@ -19,8 +19,9 @@ async fn example_feed() -> String {
     let mut my_string = String::new();
     if let Ok(content) = reqwest::get("https://www.heise.de/rss/heise.rdf").await {
         if let Ok(text) = content.bytes().await {
-            // bytes to string
-            my_string = String::from_utf8(text.to_vec()).unwrap();
+            if let Ok(text) = std::str::from_utf8(&text) {
+                my_string = text.to_string();
+            }
         }
     }
     my_string
