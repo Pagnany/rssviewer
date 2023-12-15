@@ -4,8 +4,11 @@ let greetInputEl;
 let greetMsgEl;
 
 async function greet() {
-  // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
   greetMsgEl.textContent = await invoke("greet", { name: greetInputEl.value });
+}
+
+async function example_rss() {
+  console.log(await invoke("example_feed"));
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -14,5 +17,6 @@ window.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#greet-form").addEventListener("submit", (e) => {
     e.preventDefault();
     greet();
+    example_rss();
   });
 });
