@@ -43,10 +43,9 @@ async function example_rss() {
             .childNodes[0].nodeValue + "<br />";
         */
         rssDate += "</article>";
-        rssDate += "<br />";
+        rssDate += "<br/>";
       }
 
-      //rssFeedEl.textContent = rssDate;
       rssFeedEl.innerHTML = rssDate;
     })
     .catch((error) => console.error(error));
