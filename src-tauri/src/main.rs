@@ -29,18 +29,16 @@ async fn example_feed() -> String {
 }
 
 fn _file_test() {
-    let file_path = tauri::api::path::data_dir()
-        .unwrap_or(std::path::PathBuf::new())
-        .to_string_lossy()
-        .to_string();
-    let file_path = format!("{}\\me.pagnany.de\\test.txt", file_path);
+    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    file_path.push("me.pagnany.de");
+    file_path.push("test.txt");
 
     // create path if not exists
-    let path = std::path::Path::new(&file_path);
-    if !path.exists() {
-        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    if !file_path.parent().unwrap().exists() {
+        std::fs::create_dir_all(file_path.parent().unwrap()).unwrap();
     }
 
+    // create file
     match File::create(file_path) {
         Ok(file) => file,
         Err(error) => panic!("Problem creating the file: {:?}", error),
