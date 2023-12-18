@@ -1,3 +1,6 @@
+const { writeTextFile, writeFile, BaseDirectory, createDir } =
+  window.__TAURI__.fs;
+
 const { invoke } = window.__TAURI__.tauri;
 
 let greetMsgEl;
@@ -22,14 +25,13 @@ async function example_rss() {
             .childNodes[0].nodeValue +
           "</h4>";
 
+        // get image from content:encoded
         let encoded_content = xml
           .getElementsByTagName("item")
           [i].getElementsByTagName("content:encoded")[0]
           .childNodes[0].nodeValue;
-
         let imgRegex = /<img[^>]*>/;
         let imgTag = encoded_content.match(imgRegex);
-
         if (imgTag) {
           rssDate += imgTag[0] + "<br />";
         }

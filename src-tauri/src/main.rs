@@ -12,6 +12,7 @@ fn main() {
 async fn example_feed() -> String {
     let rss_url = "https://www.heise.de/rss/heise.rdf";
     //let rss_url = "https://www.tagesschau.de/inland/index~rss2.xml";
+    //let rss_url = "https://www.spiegel.de/schlagzeilen/index.rss";
     let mut my_string = String::new();
     if let Ok(content) = reqwest::get(rss_url).await {
         if let Ok(text) = content.bytes().await {
