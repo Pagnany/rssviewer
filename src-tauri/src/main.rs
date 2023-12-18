@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs::File, io::Write};
+use rusqlite::Connection;
 
 fn main() {
     tauri::Builder::default()
@@ -13,7 +13,6 @@ fn main() {
 
 #[tauri::command]
 async fn example_feed() -> String {
-    _file_test();
     let rss_url = "https://www.heise.de/rss/heise.rdf";
     //let rss_url = "https://www.tagesschau.de/inland/index~rss2.xml";
     //let rss_url = "https://www.spiegel.de/schlagzeilen/index.rss";
@@ -28,21 +27,57 @@ async fn example_feed() -> String {
     my_string
 }
 
-fn _file_test() {
+fn _insert_rssfeed_into_databese(name: String, url: String) {
     let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
     file_path.push("me.pagnany.de");
-    file_path.push("test.txt");
+    file_path.push("rssdb.sqlite");
+
+    let conn = match Connection::open(file_path) {
+        Ok(conn) => conn,
+        Err(e) => panic!("Error opening database: {:?}", e),
+    };
+
+    let sql_insert = String::from("INSERT INTO rssfeed (name, url) VALUES (?, ?)");
+
+    match conn.execute(&sql_insert, &[&name, &url]) {
+        Ok(_) => (),
+        Err(e) => panic!("Error inserting into table: {:?}", e),
+    }
+}
+
+fn _create_database() {
+    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    file_path.push("me.pagnany.de");
+    file_path.push("rssdb.sqlite");
 
     // create path if not exists
     if !file_path.parent().unwrap().exists() {
         std::fs::create_dir_all(file_path.parent().unwrap()).unwrap();
     }
 
-    // create file
-    match File::create(file_path) {
-        Ok(file) => file,
-        Err(error) => panic!("Problem creating the file: {:?}", error),
+    let conn = match Connection::open(file_path) {
+        Ok(conn) => conn,
+        Err(e) => panic!("Error opening database: {:?}", e),
     };
+
+    let sql_table_create = String::from(
+        "CREATE TABLE IF NOT EXISTS rssfeed (id INTEGER PRIMARY KEY, name TEXT, url TEXT)",
+    );
+
+    match conn.execute(&sql_table_create, ()) {
+        Ok(_) => (),
+        Err(e) => panic!("Error creating table: {:?}", e),
+    }
+
+    /*
+    let tx = conn.transaction().unwrap();
+    let mut stmt = tx.prepare("INSERT INTO test (name) VALUES (?1)").unwrap();
+    for geb in gebinde {
+        stmt.execute([geb]).unwrap();
+    }
+    stmt.finalize().unwrap();
+    tx.commit().unwrap();
+    */
 }
 
 fn _setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error + 'static>> {
