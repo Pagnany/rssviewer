@@ -21,16 +21,29 @@ async function example_rss() {
           xml.getElementsByTagName("item")[i].getElementsByTagName("title")[0]
             .childNodes[0].nodeValue +
           "</h4>";
+
+        let encoded_content = xml
+          .getElementsByTagName("item")
+          [i].getElementsByTagName("content:encoded")[0]
+          .childNodes[0].nodeValue;
+
+        let imgRegex = /<img[^>]*>/;
+        let imgTag = encoded_content.match(imgRegex);
+
+        if (imgTag) {
+          rssDate += imgTag[0] + "<br />";
+        }
+
         rssDate +=
           "<p>" +
           xml
             .getElementsByTagName("item")
             [i].getElementsByTagName("description")[0].childNodes[0].nodeValue +
           "</p>";
+
         let urllink = xml
           .getElementsByTagName("item")
           [i].getElementsByTagName("link")[0].childNodes[0].nodeValue;
-
         rssDate +=
           '<a href="' + urllink + ' " target="_blank">Link</a>' + "<br />";
 
@@ -42,6 +55,7 @@ async function example_rss() {
           xml.getElementsByTagName("item")[i].getElementsByTagName("guid")[0]
             .childNodes[0].nodeValue + "<br />";
         */
+
         rssDate += "</article>";
         rssDate += "<br/>";
       }
@@ -57,4 +71,6 @@ window.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     example_rss();
   });
+
+  setInterval(example_rss, 60000);
 });
