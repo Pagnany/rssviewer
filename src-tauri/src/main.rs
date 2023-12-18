@@ -1,9 +1,11 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::{fs::File, io::Write};
+
 fn main() {
     tauri::Builder::default()
-        //.setup(setup_handler)
+        //.setup(_setup_handler)
         .invoke_handler(tauri::generate_handler![example_feed])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -11,6 +13,7 @@ fn main() {
 
 #[tauri::command]
 async fn example_feed() -> String {
+    _file_test();
     let rss_url = "https://www.heise.de/rss/heise.rdf";
     //let rss_url = "https://www.tagesschau.de/inland/index~rss2.xml";
     //let rss_url = "https://www.spiegel.de/schlagzeilen/index.rss";
@@ -25,7 +28,26 @@ async fn example_feed() -> String {
     my_string
 }
 
-fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error + 'static>> {
+fn _file_test() {
+    let file_path = tauri::api::path::data_dir()
+        .unwrap_or(std::path::PathBuf::new())
+        .to_string_lossy()
+        .to_string();
+    let file_path = format!("{}\\me.pagnany.de\\test.txt", file_path);
+
+    // create path if not exists
+    let path = std::path::Path::new(&file_path);
+    if !path.exists() {
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    }
+
+    match File::create(file_path) {
+        Ok(file) => file,
+        Err(error) => panic!("Problem creating the file: {:?}", error),
+    };
+}
+
+fn _setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error + 'static>> {
     let app_handle = app.handle();
 
     println!(
@@ -77,7 +99,7 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error +
             .to_string_lossy()
     );
     println!(
-        "{}",
+        "Data dir: {}",
         tauri::api::path::data_dir()
             .unwrap_or(std::path::PathBuf::new())
             .to_string_lossy()
