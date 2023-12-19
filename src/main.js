@@ -75,4 +75,10 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   setInterval(example_rss, 60000);
+
+  invoke("test1")
+    .then((message) => {
+      console.log(message);
+    })
+    .catch((error) => console.error(error));
 });

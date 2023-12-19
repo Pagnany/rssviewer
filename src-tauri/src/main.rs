@@ -2,11 +2,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use rusqlite::Connection;
+use serde::{Deserialize, Serialize};
 
 fn main() {
     tauri::Builder::default()
         //.setup(_setup_handler)
-        .invoke_handler(tauri::generate_handler![example_feed])
+        .invoke_handler(tauri::generate_handler![example_feed, test1])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -18,13 +19,43 @@ async fn example_feed() -> String {
     //let rss_url = "https://www.spiegel.de/schlagzeilen/index.rss";
     let mut my_string = String::new();
     if let Ok(content) = reqwest::get(rss_url).await {
-        if let Ok(text) = content.bytes().await {
-            if let Ok(text) = std::str::from_utf8(&text) {
-                my_string = text.to_string();
-            }
+        if let Ok(text) = content.text().await {
+            my_string = text;
         }
     }
     my_string
+}
+
+#[tauri::command]
+fn test1() -> Vec<RssFeed> {
+    let mut test_vec = Vec::new();
+    test_vec.push(RssFeed {
+        id: String::from("1"),
+        header: String::from("Test"),
+        description: String::from("Test"),
+        url: String::from("Test"),
+        image: String::from("Test"),
+        date: String::from("Test"),
+    });
+    test_vec.push(RssFeed {
+        id: String::from("2"),
+        header: String::from("Test"),
+        description: String::from("Test"),
+        url: String::from("Test"),
+        image: String::from("Test"),
+        date: String::from("Test"),
+    });
+    test_vec
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RssFeed {
+    pub id: String,
+    pub header: String,
+    pub description: String,
+    pub url: String,
+    pub image: String,
+    pub date: String,
 }
 
 fn _insert_rssfeed_into_databese(name: String, url: String) {
