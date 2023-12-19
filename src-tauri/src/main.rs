@@ -35,8 +35,12 @@ fn test1() -> Vec<RssFeed> {
         .unwrap()
         .with_ymd_and_hms(2020, 1, 1, 0, 0, 0)
         .unwrap();
+    let date2: DateTime<FixedOffset> = FixedOffset::east_opt(hour * 1)
+        .unwrap()
+        .with_ymd_and_hms(2020, 1, 2, 0, 0, 0)
+        .unwrap();
 
-    println!("{}", date);
+    println!("{}", date < date2);
 
     let mut test_vec = Vec::new();
     test_vec.push(RssFeed {
