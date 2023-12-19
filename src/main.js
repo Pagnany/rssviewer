@@ -11,6 +11,7 @@ let xml;
 async function example_rss() {
   await invoke("example_feed")
     .then((message) => {
+      console.log(message);
       let rssDate = "";
       let parser = new DOMParser();
       xml = parser.parseFromString(message, "text/xml");
@@ -47,7 +48,12 @@ async function example_rss() {
           .getElementsByTagName("item")
           [i].getElementsByTagName("link")[0].childNodes[0].nodeValue;
         rssDate +=
-          '<a href="' + urllink + ' " target="_blank">Link</a>' + "<br />";
+          '<a href="' +
+          urllink +
+          ' " target="_blank">' +
+          urllink +
+          "</a>" +
+          "<br />";
 
         rssDate +=
           xml.getElementsByTagName("item")[i].getElementsByTagName("pubDate")[0]
@@ -75,10 +81,4 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   setInterval(example_rss, 60000);
-
-  invoke("test1")
-    .then((message) => {
-      console.log(message);
-    })
-    .catch((error) => console.error(error));
 });
