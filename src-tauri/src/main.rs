@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use chrono::prelude::*;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
@@ -23,11 +24,20 @@ async fn example_feed() -> String {
             my_string = text;
         }
     }
+
     my_string
 }
 
 #[tauri::command]
 fn test1() -> Vec<RssFeed> {
+    let hour = 3600;
+    let date: DateTime<FixedOffset> = FixedOffset::east_opt(hour * 1)
+        .unwrap()
+        .with_ymd_and_hms(2020, 1, 1, 0, 0, 0)
+        .unwrap();
+
+    println!("{}", date);
+
     let mut test_vec = Vec::new();
     test_vec.push(RssFeed {
         id: String::from("1"),
@@ -48,7 +58,9 @@ fn test1() -> Vec<RssFeed> {
     test_vec
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+// Sorting of a struct: https://rust-lang-nursery.github.io/rust-cookbook/algorithms/sorting.html
+
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct RssFeed {
     pub id: String,
     pub header: String,
