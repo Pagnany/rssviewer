@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use chrono::prelude::*;
+use regex::Regex;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
@@ -55,6 +56,7 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
             };
 
             for child in node.children() {
+                //println!("{}", child.tag_name().name());
                 match child.tag_name().name() {
                     "guid" => rss_feed.id = child.text().unwrap().to_string(),
                     "title" => rss_feed.header = child.text().unwrap().to_string(),
@@ -69,6 +71,17 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
                     "enclosure" => {
                         if child.attribute("type").unwrap() == "image/jpeg" {
                             rss_feed.image = child.attribute("url").unwrap().to_string();
+                        }
+                    }
+                    "encoded" => {
+                        // find <img> tag in a non xml string and get the link in src=""
+                        let content_encoded = child.text().unwrap().to_string();
+                        let re = Regex::new(r#"<img src="([^"]*)""#).unwrap();
+                        let caps = re.captures(&content_encoded);
+
+                        if let Some(caps) = caps {
+                            let img_src = &caps[1];
+                            rss_feed.image = img_src.to_string();
                         }
                     }
                     _ => (),

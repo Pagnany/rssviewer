@@ -17,6 +17,7 @@ async function example_rss() {
         rssDate += "<p>" + item.feed_name + "</p>";
         rssDate += "<h4>" + item.header + "</h4>";
         rssDate += "<p>" + item.description + "</p>";
+        rssDate += "<img src='" + item.image + "'/>" + "<br />";
 
         rssDate +=
           '<a href="' +
