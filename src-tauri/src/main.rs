@@ -14,28 +14,39 @@ fn main() {
 }
 
 #[tauri::command]
-async fn example_feed() -> String {
+async fn example_feed() -> Vec<RssFeed> {
+    let mut temp = get_all_rss_items().await;
+    sort_rssfeed_vec(&mut temp);
+    temp
+}
+
+fn sort_rssfeed_vec(rssfeed_vec: &mut Vec<RssFeed>) {
+    rssfeed_vec.sort_by(|a, b| b.date.cmp(&a.date));
+}
+
+async fn get_all_rss_items() -> Vec<RssFeed> {
     let rss_feed_urls = get_rssfeed_url_from_database();
-    let mut rss_feed_xml = String::new();
+    let mut rss_feed_items = Vec::new();
 
     for rss_feed_url in rss_feed_urls {
         let response = reqwest::get(&rss_feed_url).await.unwrap();
         let body = response.text().await.unwrap();
-        print!("{:?}", get_items_form_feed(&body));
-        rss_feed_xml.push_str(&body);
+        rss_feed_items.append(&mut get_items_form_feed(&body));
     }
-
-    rss_feed_xml
+    rss_feed_items
 }
 
 fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
     let mut rss_feed_vec = Vec::new();
 
     let doc = roxmltree::Document::parse(feed).unwrap();
+    let mut rss_feed_name = String::from("");
+    let mut rss_feed_name_set = false;
     for node in doc.descendants() {
         if node.tag_name().name() == "item" {
             let mut rss_feed = RssFeed {
                 id: String::from(""),
+                feed_name: String::from(""),
                 header: String::from(""),
                 description: String::from(""),
                 url: String::from(""),
@@ -53,7 +64,7 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
                         let date = DateTime::parse_from_rfc2822(child.text().unwrap())
                             .unwrap()
                             .with_timezone(&FixedOffset::east_opt(3600).unwrap());
-                        rss_feed.date = date.format("%d.%m.%Y %H:%M").to_string();
+                        rss_feed.date = date.format("%Y-%m-%d %H:%M").to_string();
                     }
                     "enclosure" => {
                         if child.attribute("type").unwrap() == "image/jpeg" {
@@ -63,7 +74,11 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
                     _ => (),
                 }
             }
+            rss_feed.feed_name = rss_feed_name.clone();
             rss_feed_vec.push(rss_feed);
+        } else if node.tag_name().name() == "title" && !rss_feed_name_set {
+            rss_feed_name = node.text().unwrap().to_string();
+            rss_feed_name_set = true;
         }
     }
 
@@ -105,6 +120,7 @@ fn get_rssfeed_url_from_database() -> Vec<String> {
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct RssFeed {
     pub id: String,
+    pub feed_name: String,
     pub header: String,
     pub description: String,
     pub url: String,

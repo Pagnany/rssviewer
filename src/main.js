@@ -11,62 +11,25 @@ let xml;
 async function example_rss() {
   await invoke("example_feed")
     .then((message) => {
-      console.log(message);
       let rssDate = "";
-      let parser = new DOMParser();
-      xml = parser.parseFromString(message, "text/xml");
-
-      //rssFeedEl.textContent = xml.getElementsByTagName("item")[0].childNodes[0].nodeValue;
-      let itemscount = xml.getElementsByTagName("item").length;
-      for (let i = 0; i < itemscount; i++) {
+      message.forEach((item) => {
         rssDate += "<article>";
-        rssDate +=
-          "<h4>" +
-          xml.getElementsByTagName("item")[i].getElementsByTagName("title")[0]
-            .childNodes[0].nodeValue +
-          "</h4>";
+        rssDate += "<p>" + item.feed_name + "</p>";
+        rssDate += "<h4>" + item.header + "</h4>";
+        rssDate += "<p>" + item.description + "</p>";
 
-        // get image from content:encoded
-        let encoded_content = xml
-          .getElementsByTagName("item")
-          [i].getElementsByTagName("content:encoded")[0]
-          .childNodes[0].nodeValue;
-        let imgRegex = /<img[^>]*>/;
-        let imgTag = encoded_content.match(imgRegex);
-        if (imgTag) {
-          rssDate += imgTag[0] + "<br />";
-        }
-
-        rssDate +=
-          "<p>" +
-          xml
-            .getElementsByTagName("item")
-            [i].getElementsByTagName("description")[0].childNodes[0].nodeValue +
-          "</p>";
-
-        let urllink = xml
-          .getElementsByTagName("item")
-          [i].getElementsByTagName("link")[0].childNodes[0].nodeValue;
         rssDate +=
           '<a href="' +
-          urllink +
+          item.url +
           ' " target="_blank">' +
-          urllink +
+          "Link" +
           "</a>" +
           "<br />";
 
-        rssDate +=
-          xml.getElementsByTagName("item")[i].getElementsByTagName("pubDate")[0]
-            .childNodes[0].nodeValue + "<br />";
-        /*
-        rssDate +=
-          xml.getElementsByTagName("item")[i].getElementsByTagName("guid")[0]
-            .childNodes[0].nodeValue + "<br />";
-        */
-
+        rssDate += item.date + "<br />";
         rssDate += "</article>";
         rssDate += "<br/>";
-      }
+      });
 
       rssFeedEl.innerHTML = rssDate;
     })

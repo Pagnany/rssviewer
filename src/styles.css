@@ -80,3 +80,8 @@ button {
 a:hover {
   color: #24c8db;
 }
+
+a {
+  color: #77bdff;
+  text-decoration: none;
+}
