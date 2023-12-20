@@ -38,11 +38,16 @@ async function example_rss() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  invoke("create_database")
+    .then((message) => {})
+    .catch((error) => console.error(error));
+
   rssFeedEl = document.querySelector("#rss-feed");
   document.querySelector("#rss-refresh").addEventListener("submit", (e) => {
     e.preventDefault();
     example_rss();
   });
 
+  example_rss();
   setInterval(example_rss, 60000);
 });

@@ -9,13 +9,32 @@ use serde::{Deserialize, Serialize};
 fn main() {
     tauri::Builder::default()
         //.setup(_setup_handler)
-        .invoke_handler(tauri::generate_handler![example_feed])
+        .invoke_handler(tauri::generate_handler![
+            example_feed,
+            create_database,
+            get_rss_feed_channel_from_database,
+            delete_rss_feed_channel_from_database,
+            insert_rssfeed_into_databese
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
 #[tauri::command]
 async fn example_feed() -> Vec<RssFeed> {
+    /*
+    _insert_rssfeed_into_databese(
+        String::from("Heise"),
+        String::from("https://www.heise.de/rss/heise.rdf"),
+        true,
+    );
+
+    _insert_rssfeed_into_databese(
+        String::from("Tagesschau"),
+        String::from("https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml"),
+        true,
+    );
+    */
     let mut temp = get_all_rss_items().await;
     sort_rssfeed_vec(&mut temp);
     temp
@@ -26,7 +45,7 @@ fn sort_rssfeed_vec(rssfeed_vec: &mut Vec<RssFeed>) {
 }
 
 async fn get_all_rss_items() -> Vec<RssFeed> {
-    let rss_feed_urls = get_rssfeed_url_from_database();
+    let rss_feed_urls = get_active_rssfeed_url_from_database();
     let mut rss_feed_items = Vec::new();
 
     for rss_feed_url in rss_feed_urls {
@@ -56,7 +75,6 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
             };
 
             for child in node.children() {
-                //println!("{}", child.tag_name().name());
                 match child.tag_name().name() {
                     "guid" => rss_feed.id = child.text().unwrap().to_string(),
                     "title" => rss_feed.header = child.text().unwrap().to_string(),
@@ -98,7 +116,7 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
     rss_feed_vec
 }
 
-fn get_rssfeed_url_from_database() -> Vec<String> {
+fn get_active_rssfeed_url_from_database() -> Vec<String> {
     let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
@@ -108,7 +126,7 @@ fn get_rssfeed_url_from_database() -> Vec<String> {
         Err(e) => panic!("Error opening database: {:?}", e),
     };
 
-    let sql_select = String::from("SELECT * FROM rssfeed");
+    let sql_select = String::from("SELECT * FROM rssfeed where active = 'true'");
 
     let mut stmt = match conn.prepare(&sql_select) {
         Ok(stmt) => stmt,
@@ -130,6 +148,47 @@ fn get_rssfeed_url_from_database() -> Vec<String> {
     rssfeed_vec
 }
 
+#[tauri::command]
+fn get_rss_feed_channel_from_database() -> Vec<RssFeedChannel> {
+    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    file_path.push("me.pagnany.de");
+    file_path.push("rssdb.sqlite");
+
+    let conn = match Connection::open(file_path) {
+        Ok(conn) => conn,
+        Err(e) => panic!("Error opening database: {:?}", e),
+    };
+
+    let sql_select = String::from("SELECT * FROM rssfeed");
+
+    let mut stmt = match conn.prepare(&sql_select) {
+        Ok(stmt) => stmt,
+        Err(e) => panic!("Error preparing statement: {:?}", e),
+    };
+
+    let rssfeed_channel_iter = match stmt.query_map([], |row| {
+        let active_str: String = row.get(3).unwrap_or(String::from("false"));
+        let active_bool = match active_str.to_lowercase().as_str() {
+            "true" | "1" => true,
+            _ => false,
+        };
+
+        Ok(RssFeedChannel {
+            id: row.get(0).unwrap_or(0),
+            name: row.get(1).unwrap_or(String::from("Empty")),
+            url: row.get(2).unwrap_or(String::from("Empty")),
+            active: active_bool,
+        })
+    }) {
+        Ok(rssfeed_channel_iter) => rssfeed_channel_iter,
+        Err(e) => panic!("Error querying database: {:?}", e),
+    };
+
+    rssfeed_channel_iter
+        .map(|rssfeed_channel| rssfeed_channel.unwrap())
+        .collect()
+}
+
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct RssFeed {
     pub id: String,
@@ -141,7 +200,16 @@ pub struct RssFeed {
     pub date: String,
 }
 
-fn _insert_rssfeed_into_databese(name: String, url: String) {
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RssFeedChannel {
+    pub id: i32,
+    pub name: String,
+    pub url: String,
+    pub active: bool,
+}
+
+#[tauri::command]
+async fn insert_rssfeed_into_databese(name: String, url: String, active: bool) {
     let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
@@ -151,15 +219,40 @@ fn _insert_rssfeed_into_databese(name: String, url: String) {
         Err(e) => panic!("Error opening database: {:?}", e),
     };
 
-    let sql_insert = String::from("INSERT INTO rssfeed (name, url) VALUES (?, ?)");
+    let sql_insert = String::from("INSERT INTO rssfeed (name, url, active) VALUES (?, ?, ?)");
 
-    match conn.execute(&sql_insert, &[&name, &url]) {
+    let mut str_active = String::from("false");
+    if active {
+        str_active = String::from("true");
+    }
+
+    match conn.execute(&sql_insert, &[&name, &url, &str_active]) {
         Ok(_) => (),
         Err(e) => panic!("Error inserting into table: {:?}", e),
     }
 }
 
-fn _create_database() {
+#[tauri::command]
+async fn delete_rss_feed_channel_from_database(id: i32) {
+    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    file_path.push("me.pagnany.de");
+    file_path.push("rssdb.sqlite");
+
+    let conn = match Connection::open(file_path) {
+        Ok(conn) => conn,
+        Err(e) => panic!("Error opening database: {:?}", e),
+    };
+
+    let sql_delete = String::from("DELETE FROM rssfeed WHERE id = ?");
+
+    match conn.execute(&sql_delete, &[&id]) {
+        Ok(_) => (),
+        Err(e) => panic!("Error deleting from table: {:?}", e),
+    }
+}
+
+#[tauri::command]
+fn create_database() {
     let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
@@ -175,7 +268,7 @@ fn _create_database() {
     };
 
     let sql_table_create = String::from(
-        "CREATE TABLE IF NOT EXISTS rssfeed (id INTEGER PRIMARY KEY, name TEXT, url TEXT)",
+        "CREATE TABLE IF NOT EXISTS rssfeed (id INTEGER PRIMARY KEY, name TEXT, url TEXT, active BOOLEAN)",
     );
 
     match conn.execute(&sql_table_create, ()) {
