@@ -41,7 +41,7 @@ async function show_rss_feed() {
         delete_rss_feed(rss_feed_channels[i].id)
       );
     rssFeedChannelsEl.appendChild(article);
-    rssFeedChannelsEl.innerHTML += "<br />";
+    rssFeedChannelsEl.appendChild(document.createElement("br"));
   }
 }
 
