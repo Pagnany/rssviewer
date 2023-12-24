@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 fn main() {
     tauri::Builder::default()
-        //.setup(_setup_handler)
         .invoke_handler(tauri::generate_handler![
             example_feed,
             create_database,
@@ -22,19 +21,6 @@ fn main() {
 
 #[tauri::command]
 async fn example_feed() -> Vec<RssFeed> {
-    /*
-    _insert_rssfeed_into_databese(
-        String::from("Heise"),
-        String::from("https://www.heise.de/rss/heise.rdf"),
-        true,
-    );
-
-    _insert_rssfeed_into_databese(
-        String::from("Tagesschau"),
-        String::from("https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml"),
-        true,
-    );
-    */
     let mut temp = get_all_rss_items().await;
     sort_rssfeed_vec(&mut temp);
     temp
@@ -53,6 +39,7 @@ async fn get_all_rss_items() -> Vec<RssFeed> {
         let body = response.text().await.unwrap();
         rss_feed_items.append(&mut get_items_form_feed(&body));
     }
+    rss_feed_items.truncate(50);
     rss_feed_items
 }
 
