@@ -23,6 +23,7 @@ fn main() {
 async fn example_feed() -> Vec<RssFeed> {
     let mut temp = get_all_rss_items().await;
     sort_rssfeed_vec(&mut temp);
+    temp.truncate(50);
     temp
 }
 
@@ -39,7 +40,6 @@ async fn get_all_rss_items() -> Vec<RssFeed> {
         let body = response.text().await.unwrap();
         rss_feed_items.append(&mut get_items_form_feed(&body));
     }
-    rss_feed_items.truncate(50);
     rss_feed_items
 }
 
