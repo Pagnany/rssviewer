@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-            example_feed,
+            load_rssfeeds,
             create_database,
             get_rss_feed_channel_from_database,
             delete_rss_feed_channel_from_database,
@@ -20,8 +20,27 @@ fn main() {
         .expect("error while running tauri application");
 }
 
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+pub struct RssFeed {
+    pub id: String,
+    pub feed_name: String,
+    pub header: String,
+    pub description: String,
+    pub url: String,
+    pub image: String,
+    pub date: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RssFeedChannel {
+    pub id: i32,
+    pub name: String,
+    pub url: String,
+    pub active: bool,
+}
+
 #[tauri::command]
-async fn example_feed() -> Vec<RssFeed> {
+async fn load_rssfeeds() -> Vec<RssFeed> {
     let mut temp = get_all_rss_items().await;
     sort_rssfeed_vec(&mut temp);
     temp.truncate(50);
@@ -175,25 +194,6 @@ fn get_rss_feed_channel_from_database() -> Vec<RssFeedChannel> {
     rssfeed_channel_iter
         .map(|rssfeed_channel| rssfeed_channel.unwrap())
         .collect()
-}
-
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct RssFeed {
-    pub id: String,
-    pub feed_name: String,
-    pub header: String,
-    pub description: String,
-    pub url: String,
-    pub image: String,
-    pub date: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RssFeedChannel {
-    pub id: i32,
-    pub name: String,
-    pub url: String,
-    pub active: bool,
 }
 
 #[tauri::command]

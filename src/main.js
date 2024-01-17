@@ -5,10 +5,8 @@ const { invoke } = window.__TAURI__.tauri;
 
 let rssFeedEl;
 
-let xml;
-
-async function example_rss() {
-  await invoke("example_feed")
+async function load_rssfeeds() {
+  await invoke("load_rssfeeds")
     .then((message) => {
       let rssDate = "";
       message.forEach((item) => {
@@ -44,9 +42,9 @@ window.addEventListener("DOMContentLoaded", () => {
   rssFeedEl = document.querySelector("#rss-feed");
   document.querySelector("#rss-refresh").addEventListener("submit", (e) => {
     e.preventDefault();
-    example_rss();
+    load_rssfeeds();
   });
 
-  example_rss();
-  setInterval(example_rss, 60000);
+  load_rssfeeds();
+  setInterval(load_rssfeeds, 60000);
 });

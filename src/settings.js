@@ -4,7 +4,7 @@ let rssFeedChannelsEl;
 
 async function delete_rss_feed(id) {
   await invoke("delete_rss_feed_channel_from_database", { id })
-    .then(() => {
+    .then((_) => {
       show_rss_feed();
     })
     .catch((error) => console.error(error));
@@ -15,7 +15,7 @@ async function add_rss_feed() {
   let url = document.querySelector("#rss-url").value;
   let active = true;
   await invoke("insert_rssfeed_into_databese", { name, url, active })
-    .then(() => {
+    .then((_) => {
       show_rss_feed();
     })
     .catch((error) => console.error(error));
@@ -23,7 +23,7 @@ async function add_rss_feed() {
 
 async function set_active(id, active) {
   await invoke("set_rssfeed_activity", { id: id, active: active })
-    .then((message) => {})
+    .then((_) => {})
     .catch((error) => console.error(error));
 }
 
