@@ -3,7 +3,6 @@ const { writeTextFile, writeFile, BaseDirectory, createDir } =
 
 const { invoke } = window.__TAURI__.tauri;
 
-let greetMsgEl;
 let rssFeedEl;
 
 let xml;
@@ -39,7 +38,7 @@ async function example_rss() {
 
 window.addEventListener("DOMContentLoaded", () => {
   invoke("create_database")
-    .then((message) => {})
+    .then((_) => {})
     .catch((error) => console.error(error));
 
   rssFeedEl = document.querySelector("#rss-feed");

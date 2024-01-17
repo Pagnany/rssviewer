@@ -21,6 +21,12 @@ async function add_rss_feed() {
     .catch((error) => console.error(error));
 }
 
+async function set_active(id, active) {
+  await invoke("set_rssfeed_activity", { id: id, active: active })
+    .then((message) => {})
+    .catch((error) => console.error(error));
+}
+
 async function show_rss_feed() {
   let rss_feed_channels = await invoke("get_rss_feed_channel_from_database");
   rssFeedChannelsEl.innerHTML = "";
@@ -39,6 +45,12 @@ async function show_rss_feed() {
       .querySelector(".delete-button")
       .addEventListener("click", () =>
         delete_rss_feed(rss_feed_channels[i].id)
+      );
+
+    article
+      .querySelector("input")
+      .addEventListener("change", (event) =>
+        set_active(rss_feed_channels[i].id, event.target.checked)
       );
     rssFeedChannelsEl.appendChild(article);
     rssFeedChannelsEl.appendChild(document.createElement("br"));

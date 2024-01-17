@@ -3,7 +3,7 @@
 
 use chrono::prelude::*;
 use regex::Regex;
-use rusqlite::Connection;
+use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 
 fn main() {
@@ -13,7 +13,8 @@ fn main() {
             create_database,
             get_rss_feed_channel_from_database,
             delete_rss_feed_channel_from_database,
-            insert_rssfeed_into_databese
+            insert_rssfeed_into_databese,
+            set_rssfeed_activity
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -272,4 +273,25 @@ fn create_database() {
     stmt.finalize().unwrap();
     tx.commit().unwrap();
     */
+}
+
+#[tauri::command]
+async fn set_rssfeed_activity(id: i32, active: bool) {
+    let active_string = if active { "true" } else { "false" };
+
+    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    file_path.push("me.pagnany.de");
+    file_path.push("rssdb.sqlite");
+
+    let conn = match Connection::open(file_path) {
+        Ok(conn) => conn,
+        Err(e) => panic!("Error opening database: {:?}", e),
+    };
+
+    let sql_delete = String::from("UPDATE rssfeed SET active = ?1 WHERE id = ?2");
+
+    match conn.execute(&sql_delete, params![active_string, id]) {
+        Ok(_) => (),
+        Err(e) => panic!("Error deleting from table: {:?}", e),
+    }
 }
