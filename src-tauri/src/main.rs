@@ -42,9 +42,22 @@ pub struct RssFeedChannel {
 #[tauri::command]
 async fn load_rssfeeds() -> Vec<RssFeed> {
     let mut temp = get_all_rss_items().await;
+
     sort_rssfeed_vec(&mut temp);
+
+    temp.iter_mut().for_each(|rssfeed| {
+        rssfeed.description = delete_a_tag_from_discription(&rssfeed.description);
+    });
+
     temp.truncate(50);
+
     temp
+}
+fn delete_a_tag_from_discription(discription: &str) -> String {
+    let re = Regex::new(r#"<a[^>]*>(.*?)</a>"#).unwrap();
+    let caps = re.replace_all(discription, "");
+
+    caps.to_string()
 }
 
 fn sort_rssfeed_vec(rssfeed_vec: &mut Vec<RssFeed>) {
