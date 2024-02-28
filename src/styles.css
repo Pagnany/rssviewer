@@ -85,3 +85,12 @@ a {
   color: #77bdff;
   text-decoration: none;
 }
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  height: 50px;
+  width: 98%;
+  display: flex;
+  justify-content: flex-end;
+}

@@ -45,11 +45,11 @@ async fn load_rssfeeds() -> Vec<RssFeed> {
 
     sort_rssfeed_vec(&mut temp);
 
+    temp.truncate(75);
+
     temp.iter_mut().for_each(|rssfeed| {
         rssfeed.description = delete_a_tag_from_discription(&rssfeed.description);
     });
-
-    temp.truncate(50);
 
     temp
 }

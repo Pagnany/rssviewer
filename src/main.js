@@ -4,6 +4,7 @@ const { writeTextFile, writeFile, BaseDirectory, createDir } =
 const { invoke } = window.__TAURI__.tauri;
 
 let rssFeedEl;
+let button_go_top;
 
 async function load_rssfeeds() {
   await invoke("load_rssfeeds")
@@ -43,6 +44,11 @@ window.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#rss-refresh").addEventListener("submit", (e) => {
     e.preventDefault();
     load_rssfeeds();
+  });
+
+  button_go_top = document.getElementById("go-top");
+  button_go_top.addEventListener("click", () => {
+    window.scrollTo(0, 0);
   });
 
   load_rssfeeds();
