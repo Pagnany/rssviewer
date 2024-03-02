@@ -3,6 +3,7 @@
 
 use chrono::prelude::*;
 use regex::Regex;
+use reqwest::header::USER_AGENT;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 
@@ -68,8 +69,15 @@ async fn get_all_rss_items() -> Vec<RssFeed> {
     let rss_feed_urls = get_active_rssfeed_url_from_database();
     let mut rss_feed_items = Vec::new();
 
+    let client = reqwest::Client::new();
+
     for rss_feed_url in rss_feed_urls {
-        let response = reqwest::get(&rss_feed_url).await.unwrap();
+        let response = client
+            .get(&rss_feed_url)
+            .header(USER_AGENT, "Rssviewer/0.0.0")
+            .send()
+            .await
+            .unwrap();
         let body = response.text().await.unwrap();
         rss_feed_items.append(&mut get_items_form_feed(&body));
     }
