@@ -51,6 +51,6 @@ window.addEventListener("DOMContentLoaded", () => {
     window.scrollTo(0, 0);
   });
 
-  load_rssfeeds();
-  setInterval(load_rssfeeds, 60000);
+  //load_rssfeeds();
+  //setInterval(load_rssfeeds, 60000);
 });

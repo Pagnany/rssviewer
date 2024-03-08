@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use chrono::prelude::*;
+use chrono::Local;
 use regex::Regex;
 use reqwest::header::USER_AGENT;
 use rusqlite::{params, Connection};
@@ -72,14 +73,28 @@ async fn get_all_rss_items() -> Vec<RssFeed> {
     let client = reqwest::Client::new();
 
     for rss_feed_url in rss_feed_urls {
-        let response = client
+        if let Ok(response) = client
             .get(&rss_feed_url)
             .header(USER_AGENT, "Rssviewer/0.0.0")
             .send()
             .await
-            .unwrap();
-        let body = response.text().await.unwrap();
-        rss_feed_items.append(&mut get_items_form_feed(&body));
+        {
+            if let Ok(body) = response.text().await {
+                rss_feed_items.append(&mut get_items_form_feed(&body));
+            } else {
+                eprintln!(
+                    "{} Error while fetching rss feed from: {}",
+                    Local::now().format("%Y-%m-%d-%H-%M-%S"),
+                    rss_feed_url
+                );
+            }
+        } else {
+            eprintln!(
+                "{} Error while fetching rss feed from: {}",
+                Local::now().format("%Y-%m-%d %H:%M:%S"),
+                rss_feed_url
+            );
+        }
     }
     rss_feed_items
 }
