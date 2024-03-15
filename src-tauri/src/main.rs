@@ -63,7 +63,7 @@ fn delete_a_tag_from_discription(discription: &str) -> String {
     caps.to_string()
 }
 
-fn sort_rssfeed_vec(rssfeed_vec: &mut Vec<RssFeed>) {
+fn sort_rssfeed_vec(rssfeed_vec: &mut [RssFeed]) {
     rssfeed_vec.sort_by(|a, b| b.date.cmp(&a.date));
 }
 
@@ -161,7 +161,7 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
 }
 
 fn get_active_rssfeed_url_from_database() -> Vec<String> {
-    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    let mut file_path = tauri::api::path::data_dir().expect("Can't get data dir");
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
 
@@ -194,7 +194,7 @@ fn get_active_rssfeed_url_from_database() -> Vec<String> {
 
 #[tauri::command]
 fn get_rss_feed_channel_from_database() -> Vec<RssFeedChannel> {
-    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    let mut file_path = tauri::api::path::data_dir().expect("Can't get data dir");
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
 
@@ -212,10 +212,7 @@ fn get_rss_feed_channel_from_database() -> Vec<RssFeedChannel> {
 
     let rssfeed_channel_iter = match stmt.query_map([], |row| {
         let active_str: String = row.get(3).unwrap_or(String::from("false"));
-        let active_bool = match active_str.to_lowercase().as_str() {
-            "true" | "1" => true,
-            _ => false,
-        };
+        let active_bool = matches!(active_str.to_lowercase().as_str(), "true" | "1");
 
         Ok(RssFeedChannel {
             id: row.get(0).unwrap_or(0),
@@ -235,7 +232,7 @@ fn get_rss_feed_channel_from_database() -> Vec<RssFeedChannel> {
 
 #[tauri::command]
 async fn insert_rssfeed_into_databese(name: String, url: String, active: bool) {
-    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    let mut file_path = tauri::api::path::data_dir().expect("Can't get data dir");
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
 
@@ -251,7 +248,7 @@ async fn insert_rssfeed_into_databese(name: String, url: String, active: bool) {
         str_active = String::from("true");
     }
 
-    match conn.execute(&sql_insert, &[&name, &url, &str_active]) {
+    match conn.execute(&sql_insert, [&name, &url, &str_active]) {
         Ok(_) => (),
         Err(e) => panic!("Error inserting into table: {:?}", e),
     }
@@ -259,7 +256,7 @@ async fn insert_rssfeed_into_databese(name: String, url: String, active: bool) {
 
 #[tauri::command]
 async fn delete_rss_feed_channel_from_database(id: i32) {
-    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    let mut file_path = tauri::api::path::data_dir().expect("Can't get data dir");
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
 
@@ -270,7 +267,7 @@ async fn delete_rss_feed_channel_from_database(id: i32) {
 
     let sql_delete = String::from("DELETE FROM rssfeed WHERE id = ?");
 
-    match conn.execute(&sql_delete, &[&id]) {
+    match conn.execute(&sql_delete, [&id]) {
         Ok(_) => (),
         Err(e) => panic!("Error deleting from table: {:?}", e),
     }
@@ -278,7 +275,7 @@ async fn delete_rss_feed_channel_from_database(id: i32) {
 
 #[tauri::command]
 fn create_database() {
-    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    let mut file_path = tauri::api::path::data_dir().expect("Can't get data dir");
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
 
@@ -316,7 +313,7 @@ fn create_database() {
 async fn set_rssfeed_activity(id: i32, active: bool) {
     let active_string = if active { "true" } else { "false" };
 
-    let mut file_path = tauri::api::path::data_dir().unwrap_or(std::path::PathBuf::new());
+    let mut file_path = tauri::api::path::data_dir().expect("Can't get data dir");
     file_path.push("me.pagnany.de");
     file_path.push("rssdb.sqlite");
 
