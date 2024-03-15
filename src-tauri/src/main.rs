@@ -18,6 +18,7 @@ fn main() {
             insert_rssfeed_into_databese,
             set_rssfeed_activity
         ])
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
