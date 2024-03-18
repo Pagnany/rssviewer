@@ -37,7 +37,7 @@ async function load_rssfeeds() {
 
 window.addEventListener("DOMContentLoaded", () => {
   invoke("create_database")
-    .then((_) => {})
+    .then((_) => { })
     .catch((error) => console.error(error));
 
   rssFeedEl = document.querySelector("#rss-feed");

@@ -23,7 +23,7 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize, Default)]
 pub struct RssFeed {
     pub id: String,
     pub feed_name: String,
@@ -108,15 +108,7 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
     let mut rss_feed_name_set = false;
     for node in doc.descendants() {
         if node.tag_name().name() == "item" {
-            let mut rss_feed = RssFeed {
-                id: String::from(""),
-                feed_name: String::from(""),
-                header: String::from(""),
-                description: String::from(""),
-                url: String::from(""),
-                image: String::from(""),
-                date: String::from(""),
-            };
+            let mut rss_feed: RssFeed = Default::default();
 
             for child in node.children() {
                 match child.tag_name().name() {
