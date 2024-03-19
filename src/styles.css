@@ -95,3 +95,8 @@ a {
   display: flex;
   justify-content: flex-end;
 }
+
+.refresh-button{
+  display: flex;
+  justify-content: center;
+}

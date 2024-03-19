@@ -41,7 +41,7 @@ window.addEventListener("DOMContentLoaded", () => {
     .catch((error) => console.error(error));
 
   rssFeedEl = document.querySelector("#rss-feed");
-  document.querySelector("#rss-refresh").addEventListener("submit", (e) => {
+  document.querySelector("#rss-refresh").addEventListener("click", (e) => {
     e.preventDefault();
     load_rssfeeds();
   });
@@ -50,7 +50,4 @@ window.addEventListener("DOMContentLoaded", () => {
   button_go_top.addEventListener("click", () => {
     window.scrollTo(0, 0);
   });
-
-  //load_rssfeeds();
-  //setInterval(load_rssfeeds, 60000);
 });

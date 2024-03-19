@@ -235,10 +235,11 @@ async fn insert_rssfeed_into_databese(name: String, url: String, active: bool) {
 
     let sql_insert = String::from("INSERT INTO rssfeed (name, url, active) VALUES (?, ?, ?)");
 
-    let mut str_active = String::from("false");
-    if active {
-        str_active = String::from("true");
-    }
+    let str_active = if active {
+        String::from("true")
+    } else {
+        String::from("false")
+    };
 
     match conn.execute(&sql_insert, [&name, &url, &str_active]) {
         Ok(_) => (),
@@ -289,16 +290,6 @@ fn create_database() {
         Ok(_) => (),
         Err(e) => panic!("Error creating table: {:?}", e),
     }
-
-    /*
-    let tx = conn.transaction().unwrap();
-    let mut stmt = tx.prepare("INSERT INTO test (name) VALUES (?1)").unwrap();
-    for geb in gebinde {
-        stmt.execute([geb]).unwrap();
-    }
-    stmt.finalize().unwrap();
-    tx.commit().unwrap();
-    */
 }
 
 #[tauri::command]
