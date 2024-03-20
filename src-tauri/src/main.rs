@@ -51,16 +51,23 @@ async fn load_rssfeeds() -> Vec<RssFeed> {
     temp.truncate(75);
 
     temp.iter_mut().for_each(|rssfeed| {
-        rssfeed.description = delete_a_tag_from_discription(&rssfeed.description);
+        rssfeed.description = add_a_tag_blank_in_discription(&rssfeed.description);
+        rssfeed.description = replace_img_tag_in_discription(&rssfeed.description);
     });
 
     temp
 }
-fn delete_a_tag_from_discription(discription: &str) -> String {
-    let re = Regex::new(r#"<a[^>]*>(.*?)</a>"#).unwrap();
-    let caps = re.replace_all(discription, "");
 
-    caps.to_string()
+fn replace_img_tag_in_discription(discription: &str) -> String {
+    let re = Regex::new(r#"<img\s.*?>"#).unwrap();
+    let result = re.replace_all(&discription, "<br /> *PICTURE* <br />");
+    result.to_string()
+}
+
+fn add_a_tag_blank_in_discription(discription: &str) -> String {
+    let re = Regex::new(r#"<a"#).unwrap();
+    let result = re.replace_all(&discription, "<a target=\"_blank\"");
+    result.to_string()
 }
 
 fn sort_rssfeed_vec(rssfeed_vec: &mut [RssFeed]) {
