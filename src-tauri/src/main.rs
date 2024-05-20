@@ -48,7 +48,7 @@ async fn load_rssfeeds() -> Vec<RssFeed> {
 
     sort_rssfeed_vec(&mut temp);
 
-    temp.truncate(75);
+    temp.truncate(100);
 
     temp.iter_mut().for_each(|rssfeed| {
         rssfeed.description = add_a_tag_blank_in_discription(&rssfeed.description);
