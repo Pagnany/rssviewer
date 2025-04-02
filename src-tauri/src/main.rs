@@ -1,8 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use chrono::prelude::*;
-use chrono::Local;
+use chrono::{DateTime, Local, Utc};
 use regex::Regex;
 use reqwest::header::USER_AGENT;
 use rusqlite::{params, Connection};
@@ -124,9 +123,11 @@ fn get_items_form_feed(feed: &str) -> Vec<RssFeed> {
                     "description" => rss_feed.description = child.text().unwrap().to_string(),
                     "link" => rss_feed.url = child.text().unwrap().to_string(),
                     "pubDate" => {
-                        let date = DateTime::parse_from_rfc2822(child.text().unwrap())
-                            .unwrap()
-                            .with_timezone(&FixedOffset::east_opt(3600).unwrap());
+                        let utc_dt: DateTime<Utc> =
+                            DateTime::parse_from_rfc2822(child.text().unwrap())
+                                .unwrap()
+                                .with_timezone(&Utc);
+                        let date = utc_dt.with_timezone(&Local);
                         rss_feed.date = date.format("%Y-%m-%d %H:%M").to_string();
                     }
                     "enclosure" => {
