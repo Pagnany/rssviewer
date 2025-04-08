@@ -8,6 +8,8 @@ use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 
 fn main() {
+    std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             load_rssfeeds,
